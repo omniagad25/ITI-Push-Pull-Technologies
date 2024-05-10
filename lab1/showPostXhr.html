@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Posts</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">All Posts</h1>
+      
+        <button id="fetchPostsBtn" class="btn btn-primary mb-3">Fetch Posts</button>
+        <div class="row" id="posts-container">
+
+        </div>
+    </div>
+
+ 
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        const posts = [];
+    
+        
+        function fetchAndDisplayPosts() {
+            let xhr = new XMLHttpRequest();
+            let url = 'http://127.0.0.1:8000/api/posts'; 
+            xhr.open("GET", url, true);
+    
+            xhr.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    const responseData = JSON.parse(this.responseText).data;
+                    responseData.forEach(post => {
+                        const postHtml = `
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <img src="./${post.image}" class="card-img-top" alt="${post.image}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">${post.title}</h5>
+                                        <p class="card-text">${post.body}</p>
+                                        <p class="card-text">Slug: ${post.slug}</p>
+                                        <p class="card-text">Created by ${post['Author-data'].name}</p>
+                                        <a href="#" class="btn btn-success">View Post</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.getElementById('posts-container').innerHTML += postHtml;
+                    });
+                }
+            }
+            xhr.send();
+        }
+
+        document.getElementById('fetchPostsBtn').addEventListener('click', fetchAndDisplayPosts);
+    </script>
+</body>
+</html>

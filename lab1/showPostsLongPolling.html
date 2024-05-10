@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Posts</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">All Posts</h1>
+      
+        <button id="fetchPostsBtn" class="btn btn-primary mb-3">Fetch Posts</button>
+        <div class="row" id="posts-container">
+
+        </div>
+    </div>
+
+ 
+    <script src="jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            let lastUpdateTime = null;
+
+            function fetchPosts() {
+                $.ajax({
+                    url: 'http://127.0.0.1:8000/api/posts',
+                    method: 'GET',
+                    data: { lastUpdateTime: lastUpdateTime },
+                    success: function(response) {
+                        const posts = response.data;
+                        if (posts.length > 0) {
+                            lastUpdateTime = posts[posts.length - 1].updated_at; // Update lastUpdateTime with the latest update time
+                            $('#posts-container').empty();
+                            posts.forEach(post => {
+                                const postHtml = `
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <img src="${post.image}" class="card-img-top" alt="${post.title}">
+                                            <div class="card-body">
+                                                <h5 class="card-title">${post.title}</h5>
+                                                <p class="card-text">${post.body}</p>
+                                                <p class="card-text">Slug: ${post.slug}</p>
+                                                <p class="card-text">Created by ${post['Author-data'].name}</p>
+                                                <a href="#" class="btn btn-success">View Post</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                $('#posts-container').append(postHtml);
+                            });
+                        }
+                        // Make the next long polling request
+                        fetchPosts();
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error fetching posts:", xhr.responseText);
+                        // Retry fetching after a short delay
+                        setTimeout(fetchPosts, 5000);
+                    }
+                });
+            }
+
+            $('#fetchPostsBtn').click(fetchPosts); // Fetch posts on button click
+
+            // Start fetching posts
+            fetchPosts();
+        });
+    </script>
+</body>
+</html>
